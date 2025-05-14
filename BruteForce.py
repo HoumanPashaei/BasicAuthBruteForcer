@@ -118,7 +118,7 @@ def main():
     parser.add_argument("-u", "--username", help="Single username")
     parser.add_argument("-P", "--passfile", required=True, help="Password wordlist file")
     parser.add_argument("-x", "--proxy", help="Proxy (e.g. http://127.0.0.1:8080 or socks5://127.0.0.1:9050)")
-    parser.add_argument("-t", "--threads", type=int, default=cpu_count(), help="Number of processes to use")
+    parser.add_argument("-w", "--workers", type=int, default=cpu_count(), help="Number of processes to use")
 
     args = parser.parse_args()
 
