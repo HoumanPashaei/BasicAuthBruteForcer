@@ -138,7 +138,7 @@ def main():
         sys.exit(1)
 
     usernames = [args.username] if args.username else list(safe_lines(args.userfile))
-    brute_force(args.domain, usernames, args.passfile, args.proxy, args.threads)
+    brute_force(args.domain, usernames, args.passfile, args.proxy, args.workers)
 
 
 if __name__ == "__main__":
