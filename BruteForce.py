@@ -53,7 +53,7 @@ def update_progress(current, total):
     filled_len = int(bar_len * current / total)
     bar = '■' * filled_len + '□' * (bar_len - filled_len)
     percent = (current / total) * 100
-    print(f"\r[+] Progress: [{bar}] %{percent:5.1f}  →  ({current}/{total})", end='', flush=True)
+    print(f"\r[+] Progress: [{bar}] {percent:5.1f}%  →  ({current}/{total})", end='', flush=True)
 
 
 def try_login(domain, username, password, proxy, shared, lock):
