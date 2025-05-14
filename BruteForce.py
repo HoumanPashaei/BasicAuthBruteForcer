@@ -89,7 +89,7 @@ def try_login(domain, username, password, proxy, shared, lock):
 def brute_force(domain, usernames, passfile, proxy, workers):
     print(f"[+] Target: {domain}")
     print(f"[+] Proxy: {proxy}" if proxy else "[+] No proxy")
-    print(f"[*] Using {workers} Threads")
+    print(f"[*] Using {workers} Workers")
 
     manager = Manager()
     shared = manager.dict()
