@@ -32,7 +32,7 @@ pip install -r requirements.txt
 ## 📚 Usage
 
 ```bash
-python BruteForce.py -d https://target.com/protected -u admin -P passwords.txt -t 4 -x http://127.0.0.1:8080
+python BruteForce.py -d https://target.com/protected -u admin -P passwords.txt -w 4 -x http://127.0.0.1:8080
 ```
 
 ### 🔧 Options
@@ -67,7 +67,7 @@ python bruteforce.py -d https://example.com/auth -u admin -P passwords.txt -x ht
 
 ### High-Speed Attack with 8 Workers
 ```bash
-python bruteforce.py -d https://example.com/auth -U users.txt -P passwords.txt -t 8
+python bruteforce.py -d https://example.com/auth -U users.txt -P passwords.txt -w 8
 ```
 
 ---
