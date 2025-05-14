@@ -101,7 +101,7 @@ pip install requests
 ## 📁 File Structure
 
 ```
-bruteforce.py      # Main script
+BruteForce.py      # Main script
 README.md          # You're here
 ```
 
