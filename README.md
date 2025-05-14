@@ -52,22 +52,22 @@ python BruteForce.py -d https://target.com/protected -u admin -P passwords.txt -
 
 ### Single Username + Password File
 ```bash
-python bruteforce.py -d https://example.com/auth -u admin -P passwords.txt
+python BruteForce.py -d https://example.com/auth -u admin -P passwords.txt
 ```
 
 ### Multiple Usernames + Password File
 ```bash
-python bruteforce.py -d https://example.com/auth -U users.txt -P passwords.txt
+python BruteForce.py -d https://example.com/auth -U users.txt -P passwords.txt
 ```
 
 ### Use Proxy (e.g., Burp or TOR)
 ```bash
-python bruteforce.py -d https://example.com/auth -u admin -P passwords.txt -x http://127.0.0.1:8080
+python BruteForce.py -d https://example.com/auth -u admin -P passwords.txt -x http://127.0.0.1:8080
 ```
 
 ### High-Speed Attack with 8 Workers
 ```bash
-python bruteforce.py -d https://example.com/auth -U users.txt -P passwords.txt -w 8
+python BruteForce.py -d https://example.com/auth -U users.txt -P passwords.txt -w 8
 ```
 
 ---
