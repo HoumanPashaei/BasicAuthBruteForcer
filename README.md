@@ -113,6 +113,4 @@ Pull requests are welcome! Feel free to fork and improve this script.
 
 ---
 
-## 📜 License
 
-This project is licensed under the [MIT License](LICENSE).
