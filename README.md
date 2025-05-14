@@ -102,6 +102,7 @@ pip install requests
 
 ```
 BruteForce.py      # Main script
+requirements.txt
 README.md          # You're here
 ```
 
