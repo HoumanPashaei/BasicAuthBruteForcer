@@ -17,14 +17,6 @@ A powerful, multiprocessing-based **Basic Authentication brute-force** tool writ
 
 ---
 
-## ⚠️ Legal Disclaimer
-
-> This tool is for **educational purposes only**.  
-> **You must have explicit permission** from the target system owner before using it.  
-> Unauthorized use of this tool is **illegal** and violates ethical standards.
-
----
-
 ## 📦 Installation
 
 ```bash
