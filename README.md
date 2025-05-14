@@ -32,7 +32,7 @@ pip install -r requirements.txt
 ## 📚 Usage
 
 ```bash
-python bruteforce.py -d https://target.com/protected -u admin -P passwords.txt -t 4
+python BruteForce.py -d https://target.com/protected -u admin -P passwords.txt -t 4 -x http://127.0.0.1:8080
 ```
 
 ### 🔧 Options
@@ -102,8 +102,6 @@ pip install requests
 
 ```
 bruteforce.py      # Main script
-users.txt          # (example usernames)
-passwords.txt      # (example passwords)
 README.md          # You're here
 ```
 
