@@ -44,7 +44,7 @@ python BruteForce.py -d https://target.com/protected -u admin -P passwords.txt -
 | `-U`, `--userfile`  | File containing a list of usernames              |
 | `-P`, `--passfile`  | File containing a list of passwords (required)   |
 | `-x`, `--proxy`     | Proxy URL (`http://` or `socks5://`)             |
-| `-t`, `--threads`   | Number of parallel processes (default: all CPUs) |
+| `-w`, `--workers`   | Number of parallel processes (default: all CPUs) |
 
 ---
 
