@@ -20,8 +20,8 @@ A powerful, multiprocessing-based **Basic Authentication brute-force** tool writ
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/your-username/basic-auth-bruteforce.git
-cd basic-auth-bruteforce
+git clone [Repository](https://github.com/HoumanPashaei/BasicAuthBruteForcer)
+cd BasicAuthBruteForcer
 pip install -r requirements.txt
 ```
 
