@@ -1,4 +1,4 @@
-# 🔐 Basic Auth Brute-Forcer (Multiprocessing + Progress Bar)
+# 🔐 Basic Auth Brute-Forcer
 
 A powerful, multiprocessing-based **Basic Authentication brute-force** tool written in Python. This tool is built for **authorized penetration testing**, offering advanced features such as proxy support, timeout handling, and a live progress bar for better visibility.
 
