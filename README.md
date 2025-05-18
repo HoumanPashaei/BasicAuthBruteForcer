@@ -106,12 +106,5 @@ requirements.txt
 README.md          # You're here
 ```
 
----
-
-## ❤️ Contributions
-
-Pull requests are welcome! Feel free to fork and improve this script.
-
----
 
 
