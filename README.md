@@ -95,7 +95,9 @@ Install manually if needed:
 ```bash
 pip install requests
 ```
-
+```bash
+pip install colorama
+```
 ---
 
 ## 📁 File Structure
