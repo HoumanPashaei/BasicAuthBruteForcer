@@ -93,10 +93,7 @@ python BruteForce.py -d https://example.com/auth -U users.txt -P passwords.txt -
 
 Install manually if needed:
 ```bash
-pip install requests
-```
-```bash
-pip install colorama
+pip install requests colorama
 ```
 ---
 
