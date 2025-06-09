@@ -135,9 +135,8 @@ def main():
         print(Fore.RED + f"[!] Invalid password file path: {args.passfile}")
         sys.exit(1)
 
-    # Load wordlists once
     skip_nonlatin = not args.allow_nonlatin
-    passwords = list(safe_lines(args.passfile, skip_nonlatin1=skip_nonlatin))
+    passwords = list(safe_lines(args.passfile, skip_non_latin1=skip_nonlatin))
     usernames = [args.username] if args.username else list(safe_lines(args.userfile, skip_non_latin1=skip_nonlatin))
 
     if not usernames:
