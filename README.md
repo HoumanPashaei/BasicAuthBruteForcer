@@ -8,10 +8,10 @@ A powerful, multiprocessing-based **Basic Authentication brute-force** tool writ
 
 ✅ Multiprocessing support (fast parallel login attempts)  
 ✅ Live animated progress bar  
-✅ Handles large username/password files safely  
+✅ Efficient handling of large username/password files (loaded once)  
 ✅ Retry + backoff for network errors  
 ✅ Supports proxy (HTTP/SOCKS)  
-✅ Skips invalid (non-latin1) credentials silently  
+✅ Optional skipping of non-latin1 credentials (`--allow-nonlatin`)  
 ✅ Auto-corrects to HTTPS if HTTP is passed  
 ✅ Stops as soon as valid credentials are found  
 
@@ -37,14 +37,15 @@ python BruteForce.py -d https://target.com/protected -u admin -P passwords.txt -
 
 ### 🔧 Options
 
-| Option             | Description                                       |
-|--------------------|---------------------------------------------------|
-| `-d`, `--domain`    | Target URL (HTTPS required)                      |
-| `-u`, `--username`  | Single username to test                          |
-| `-U`, `--userfile`  | File containing a list of usernames              |
-| `-P`, `--passfile`  | File containing a list of passwords (required)   |
-| `-x`, `--proxy`     | Proxy URL (`http://` or `socks5://`)             |
-| `-w`, `--workers`   | Number of parallel processes (default: all CPUs) |
+| Option                 | Description                                                 |
+|------------------------|-------------------------------------------------------------|
+| `-d`, `--domain`        | Target URL (HTTPS or HTTP)                                  |
+| `-u`, `--username`      | Single username to test                                     |
+| `-U`, `--userfile`      | File containing a list of usernames                         |
+| `-P`, `--passfile`      | File containing a list of passwords (required)              |
+| `-x`, `--proxy`         | Proxy URL (`http://` or `socks5://`)                        |
+| `-w`, `--workers`       | Number of parallel processes (default: all CPUs)            |
+| `--allow-nonlatin`      | **Include** non-latin1 credentials (instead of skipping)    |
 
 ---
 
@@ -70,14 +71,20 @@ python BruteForce.py -d https://example.com/auth -u admin -P passwords.txt -x ht
 python BruteForce.py -d https://example.com/auth -U users.txt -P passwords.txt -w 8
 ```
 
+### Include Non-Latin1 Credentials
+```bash
+python BruteForce.py -d https://example.com/auth -U users.txt -P passwords.txt --allow-nonlatin
+```
+
 ---
 
 ## 🧠 How It Works
 
+- Loads the username and password lists **once** for optimal performance.
 - Uses `multiprocessing.Pool` to run login attempts in parallel.
 - For each attempt, a `requests` session is created with retry + timeout handling.
 - If a credential works (HTTP 200), the attack stops immediately.
-- Invalid credentials (non-latin1) are ignored silently to avoid crashing.
+- By default, skips credentials that are not compatible with `latin1`; use `--allow-nonlatin` to keep them.
 - Progress is printed in a dynamic bar like:
   ```
   [+] Progress: [■■■■■■□□□□□□] 52.5% (105/200)
@@ -89,12 +96,13 @@ python BruteForce.py -d https://example.com/auth -U users.txt -P passwords.txt -
 
 - Python 3.7+
 - `requests`
-- No third-party dependencies other than Python standard libs
+- `colorama`
 
 Install manually if needed:
 ```bash
 pip install requests colorama
 ```
+
 ---
 
 ## 📁 File Structure
@@ -105,5 +113,5 @@ requirements.txt
 README.md          # You're here
 ```
 
-
+---
 
